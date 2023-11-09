@@ -1,6 +1,7 @@
 mod landscape;
 
 use bevy::{
+    core_pipeline::bloom::{BloomCompositeMode, BloomPrefilterSettings, BloomSettings},
     input::mouse::{MouseMotion, MouseWheel},
     pbr::DirectionalLightShadowMap,
     prelude::*,
@@ -32,20 +33,43 @@ fn main() {
 }
 
 fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
+    commands.insert_resource(ClearColor(Color::rgb(0.7, 0.92, 0.96)));
+
     commands.insert_resource(WalkerAnimation(
         asset_server.load("models/walker/walker.gltf#Animation0"),
     ));
 
-    commands
-        .spawn(Camera3dBundle {
+    commands.spawn((
+        Camera3dBundle {
             transform: Transform::from_xyz(0.7, 20.0, 40.0)
                 .looking_at(Vec3::new(0.0, 0.3, 0.0), Vec3::Y),
             ..default()
-        })
-        .insert(CameraController {
+        },
+        CameraController {
             rotation: Quat::IDENTITY,
             zoom: 20.0,
-        });
+        },
+        FogSettings {
+            color: Color::rgb_u8(117, 202, 215),
+            directional_light_color: Color::WHITE,
+            directional_light_exponent: 30.0,
+            falloff: FogFalloff::Linear {
+                start: 0.0,
+                end: LANDSCAPE_SIZE_HALF,
+            },
+        },
+        BloomSettings {
+            intensity: 1.0,
+            low_frequency_boost: 0.5,
+            low_frequency_boost_curvature: 0.5,
+            high_pass_frequency: 0.5,
+            prefilter_settings: BloomPrefilterSettings {
+                threshold: 3.0,
+                threshold_softness: 0.6,
+            },
+            composite_mode: BloomCompositeMode::Additive,
+        },
+    ));
 
     commands.spawn(DirectionalLightBundle {
         directional_light: DirectionalLight {
