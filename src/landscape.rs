@@ -7,8 +7,8 @@ use bevy::{
     },
 };
 
-const LANDSCAPE_SIZE: f32 = 1200.0;
-const LANDSCAPE_SIZE_HALF: f32 = LANDSCAPE_SIZE * 0.5;
+pub const LANDSCAPE_SIZE: f32 = 1200.0;
+pub const LANDSCAPE_SIZE_HALF: f32 = LANDSCAPE_SIZE * 0.5;
 
 #[derive(Component)]
 pub struct MoveWithLandscapeTag;

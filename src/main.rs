@@ -5,7 +5,8 @@ use bevy::{
     pbr::DirectionalLightShadowMap,
     prelude::*,
 };
-use landscape::{LandscapePlugin, MoveWithLandscapeTag};
+use landscape::{LandscapePlugin, MoveWithLandscapeTag, LANDSCAPE_SIZE_HALF};
+use rand::Rng;
 use std::f32::consts::*;
 
 fn main() {
@@ -21,6 +22,7 @@ fn main() {
         .add_systems(
             Update,
             (
+                spawn_objects,
                 start_walker_animation,
                 animate_light_direction,
                 camera_input,
@@ -57,12 +59,40 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
         scene: asset_server.load("models/xwing/xwing.gltf#Scene0"),
         ..default()
     });
+}
+
+fn random_transform(x_close: f32) -> Transform {
+    let mut rng = rand::thread_rng();
+    let x_far = 400.0;
+    let flip = (rng.gen_range(0..=1) * 2 - 1) as f32;
+
+    Transform::from_xyz(
+        rng.gen_range(x_close..x_far) * flip,
+        -20.0,
+        -LANDSCAPE_SIZE_HALF,
+    )
+    .with_rotation(Quat::from_rotation_y(rng.gen_range(0.0..PI * 2.0)))
+}
+
+fn spawn_objects(
+    mut commands: Commands,
+    asset_server: Res<AssetServer>,
+    mut timer: Local<f32>,
+    time: Res<Time>,
+) {
+    *timer -= time.delta_seconds();
+
+    if *timer >= 0.0 {
+        return;
+    }
+
+    *timer += 1.0;
 
     commands.spawn((
         MoveWithLandscapeTag,
         SceneBundle {
             scene: asset_server.load("models/walker/walker.gltf#Scene0"),
-            transform: Transform::from_xyz(-30.0, -20.0, 0.0),
+            transform: random_transform(36.0),
             ..default()
         },
     ));
